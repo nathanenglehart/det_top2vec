@@ -1,4 +1,4 @@
-# Author: Dimo Angelov
+# Original author: Dimo Angelov
 #
 # License: BSD 3 clause
 import logging
@@ -400,6 +400,9 @@ class Top2Vec:
     
     verbose: bool (Optional, default True)
         Whether to print status data during training.
+
+    seed: int (Optional, default 56)
+        Random state for reproducability
     """
 
     def __init__(self,
@@ -430,8 +433,11 @@ class Top2Vec:
                  hdbscan_args=None,
                  gpu_hdbscan=False,
                  index_topics=False,
-                 verbose=True
+                 verbose=True,
+                 seed=56
                  ):
+
+        self.seed = seed
 
         if verbose:
             logger.setLevel(logging.DEBUG)
@@ -707,7 +713,8 @@ class Top2Vec:
                             topic_merge_delta=topic_merge_delta,
                             gpu_umap=gpu_umap,
                             gpu_hdbscan=gpu_hdbscan,
-                            index_topics=index_topics)
+                            index_topics=index_topics,
+                            seed=seed)
 
         # initialize document indexing variables
         self.document_index = None
@@ -1312,7 +1319,8 @@ class Top2Vec:
                        topic_merge_delta=0.1,
                        gpu_umap=False,
                        gpu_hdbscan=False,
-                       index_topics=False):
+                       index_topics=False,
+                       seed=56):
         """
         Computes topics from current document vectors.
 
@@ -1362,7 +1370,8 @@ class Top2Vec:
         if umap_args is None:
             umap_args = {'n_neighbors': 15,
                          'n_components': 5,
-                         'metric': 'cosine'}
+                         'metric': 'cosine',
+                         'random_state': seed}
 
         if gpu_umap and _HAVE_CUMAP:
             umap_model = cuUMAP(**umap_args).fit(self.document_vectors)
